@@ -16,6 +16,19 @@ export function JobCard({ job }: JobCardProps) {
     });
   };
 
+  const getSourceLabel = (source: string) => {
+    switch (source) {
+      case 'france-travail':
+        return 'France Travail';
+      case 'adzuna':
+        return 'Adzuna';
+      case 'mock':
+        return 'Mock';
+      default:
+        return source;
+    }
+  };
+
   return (
     <div className="job-card">
       <div className="job-header">
@@ -30,6 +43,7 @@ export function JobCard({ job }: JobCardProps) {
       </div>
 
       <div className="job-meta">
+        <span className={`job-source source-${job.source}`}>{getSourceLabel(job.source)}</span>
         <span className="job-location">{job.location}</span>
         {job.contractType && <span className="job-contract">{job.contractType}</span>}
         {job.salary && <span className="job-salary">{job.salary}</span>}

@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { searchJobs, getMockJobs } from '../services/poleEmploi';
+import { searchAdzunaJobs } from '../services/adzuna';
 import { matchJobs } from '../services/matching';
 import { userProfile } from '../config/profile';
-import { JobFilters, JobMatchResponse } from '../types';
+import type { JobFilters, JobMatchResponse, Job } from '../types';
 
 const router = Router();
 
@@ -20,19 +21,31 @@ router.get('/matches', async (req: Request, res: Response) => {
       sortOrder: req.query.sortOrder as JobFilters['sortOrder'],
     };
 
-    let jobs;
+    let jobs: Job[] = [];
 
     // Check if we should use mock data (for development without API credentials)
-    const useMock = process.env.USE_MOCK_DATA === 'true' ||
-      (!process.env.POLE_EMPLOI_CLIENT_ID || !process.env.POLE_EMPLOI_CLIENT_SECRET);
+    const useMock = process.env.USE_MOCK_DATA === 'true';
 
     if (useMock) {
       console.log('Using mock job data');
       jobs = getMockJobs();
     } else {
-      // Fetch jobs from Pôle Emploi API
       const keywords = req.query.keywords as string | undefined;
-      jobs = await searchJobs({ keywords });
+
+      // Fetch from multiple sources in parallel
+      const [franceTravailJobs, adzunaJobs] = await Promise.all([
+        // France Travail API
+        (process.env.POLE_EMPLOI_CLIENT_ID && process.env.POLE_EMPLOI_CLIENT_SECRET)
+          ? searchJobs({ keywords })
+          : Promise.resolve([]),
+        // Adzuna API
+        searchAdzunaJobs({ keywords }),
+      ]);
+
+      // Combine results from all sources
+      jobs = [...franceTravailJobs, ...adzunaJobs];
+
+      console.log(`Fetched ${franceTravailJobs.length} jobs from France Travail, ${adzunaJobs.length} from Adzuna`);
     }
 
     // Match jobs against user profile

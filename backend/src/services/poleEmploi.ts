@@ -103,6 +103,7 @@ function transformJob(poleEmploiJob: PoleEmploiJob): Job {
     datePosted: poleEmploiJob.dateCreation,
     contractType: poleEmploiJob.typeContratLibelle,
     salary: poleEmploiJob.salaire?.libelle,
+    source: 'france-travail',
   };
 }
 
@@ -119,6 +120,7 @@ export function getMockJobs(): Job[] {
       datePosted: new Date().toISOString(),
       contractType: 'CDI',
       salary: '45K€ - 55K€',
+      source: 'mock',
     },
     {
       id: '2',
@@ -130,6 +132,7 @@ export function getMockJobs(): Job[] {
       datePosted: new Date(Date.now() - 86400000).toISOString(),
       contractType: 'CDI',
       salary: '50K€ - 60K€',
+      source: 'mock',
     },
     {
       id: '3',
@@ -141,6 +144,7 @@ export function getMockJobs(): Job[] {
       datePosted: new Date(Date.now() - 172800000).toISOString(),
       contractType: 'CDI',
       salary: '48K€ - 58K€',
+      source: 'mock',
     },
     {
       id: '4',
@@ -152,6 +156,7 @@ export function getMockJobs(): Job[] {
       datePosted: new Date(Date.now() - 259200000).toISOString(),
       contractType: 'CDD',
       salary: '40K€ - 50K€',
+      source: 'mock',
     },
     {
       id: '5',
@@ -163,6 +168,7 @@ export function getMockJobs(): Job[] {
       datePosted: new Date(Date.now() - 345600000).toISOString(),
       contractType: 'CDI',
       salary: '55K€ - 70K€',
+      source: 'mock',
     },
   ];
 }

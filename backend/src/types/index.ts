@@ -9,6 +9,7 @@ export interface Job {
   datePosted: string;
   contractType?: string;
   salary?: string;
+  source: 'france-travail' | 'adzuna' | 'mock';
 }
 
 export interface MatchedJob extends Job {

@@ -240,6 +240,28 @@
   content: "@ ";
 }
 
+.job-source {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.job-source.source-france-travail {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.job-source.source-adzuna {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.job-source.source-mock {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
 .matched-skills {
   margin-bottom: 1rem;
   font-size: 0.875rem;
