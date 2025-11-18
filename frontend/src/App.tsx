@@ -1,35 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { fetchJobMatches } from './services/api';
+import { SkillChips } from './components/SkillChips';
+import { Filters } from './components/Filters';
+import { JobList } from './components/JobList';
+import type { MatchedJob, UserProfile, JobFilters } from './types';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [jobs, setJobs] = useState<MatchedJob[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<JobFilters>({
+    minMatchScore: 0,
+    location: '',
+    contractType: '',
+    sortBy: 'matchScore',
+    sortOrder: 'desc',
+  });
+
+  const loadJobs = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchJobMatches(filters);
+      setJobs(response.jobs);
+      setProfile(response.profile);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadJobs();
+  }, [filters]);
+
+  // Get all matched skills across all jobs for highlighting
+  const allMatchedSkills = [...new Set(jobs.flatMap((job) => job.matchedSkills))];
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <header className="app-header">
+        <h1>Job Matcher</h1>
+        <p>Find developer jobs that match your skills in Ile-de-France</p>
+      </header>
+
+      <main className="app-main">
+        <aside className="sidebar">
+          {profile && (
+            <SkillChips profile={profile} highlightedSkills={allMatchedSkills} />
+          )}
+          <Filters filters={filters} onFilterChange={setFilters} />
+        </aside>
+
+        <section className="content">
+          <JobList jobs={jobs} loading={loading} error={error} />
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
