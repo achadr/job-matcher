@@ -54,7 +54,9 @@ const KNOWN_SKILLS = Object.keys(SKILL_ALIASES);
 const RELEVANT_TITLE_PATTERNS = [
   // Developer roles - must have these words
   /\b(développeur|developpeur|developer)\b/i,
-  /\b(ingénieur|ingenieur|engineer)\s*(logiciel|software|développement|informatique|full.?stack|front.?end|back.?end|web|cloud|devops|data)/i,
+  /\b(ingénieur|ingenieur|engineer)\s*(logiciel|software|développement|informatique|full.?stack|front.?end|back.?end|web|cloud|devops|data|études)/i,
+  // Broader engineer roles (often dev roles)
+  /\b(ingénieur|ingenieur)\s*(d['']études|etudes)/i,
   // Specific tech roles
   /\b(frontend|front-end|front end)\b/i,
   /\b(backend|back-end|back end)\b/i,
@@ -64,7 +66,9 @@ const RELEVANT_TITLE_PATTERNS = [
   /\b(lead|architect|architecte)\s*(technique|tech|développeur|developer|logiciel|software)/i,
   /\b(tech|technical)\s*lead\b/i,
   // Specific tech in title (when it's the main job)
-  /\b(react|node\.?js|angular|vue\.?js)\s*(developer|développeur)?\b/i,
+  /\b(react|node\.?js|angular|vue\.?js|python|java|php|\.net)\s*(developer|développeur)?\b/i,
+  // Programmer / coder
+  /\b(programmeur|analyste.programmeur|concepteur)\b/i,
 ];
 
 // Exclude titles that might match but aren't dev roles

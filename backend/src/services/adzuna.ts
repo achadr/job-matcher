@@ -23,25 +23,19 @@ interface AdzunaResponse {
   count: number;
 }
 
-// Search for jobs on Adzuna
-export async function searchAdzunaJobs(params: {
+// Fetch a single page from Adzuna
+async function fetchAdzunaPage(params: {
+  appId: string;
+  appKey: string;
   keywords?: string;
   location?: string;
-  page?: number;
-}): Promise<Job[]> {
-  const appId = process.env.ADZUNA_APP_ID;
-  const appKey = process.env.ADZUNA_APP_KEY;
-
-  if (!appId || !appKey) {
-    console.log('Adzuna API credentials not configured, skipping Adzuna source');
-    return [];
-  }
-
-  // Build query parameters
+  page: number;
+  pageSize: number;
+}): Promise<{ jobs: Job[]; total: number }> {
   const queryParams = new URLSearchParams({
-    app_id: appId,
-    app_key: appKey,
-    results_per_page: '50',
+    app_id: params.appId,
+    app_key: params.appKey,
+    results_per_page: params.pageSize.toString(),
     what: params.keywords || 'developer',
     where: params.location || 'Île-de-France',
     // Search in title for better relevance
@@ -50,29 +44,82 @@ export async function searchAdzunaJobs(params: {
     max_days_old: '14',
   });
 
-  try {
-    const response = await fetch(
-      `https://api.adzuna.com/v1/api/jobs/fr/search/${params.page || 1}?${queryParams.toString()}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-        },
-      }
-    );
+  const response = await fetch(
+    `https://api.adzuna.com/v1/api/jobs/fr/search/${params.page}?${queryParams.toString()}`,
+    {
+      headers: {
+        'Accept': 'application/json',
+      },
+    }
+  );
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Adzuna API error:', error);
-      return [];
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Adzuna API error:', error);
+    return { jobs: [], total: 0 };
+  }
+
+  const data: AdzunaResponse = await response.json();
+
+  return {
+    jobs: (data.results || []).map(transformAdzunaJob),
+    total: data.count || 0,
+  };
+}
+
+// Helper to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Search for jobs on Adzuna - fetches multiple pages sequentially to avoid rate limits
+export async function searchAdzunaJobs(params: {
+  keywords?: string;
+  location?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ jobs: Job[]; total: number }> {
+  const appId = process.env.ADZUNA_APP_ID;
+  const appKey = process.env.ADZUNA_APP_KEY;
+
+  if (!appId || !appKey) {
+    console.log('Adzuna API credentials not configured, skipping Adzuna source');
+    return { jobs: [], total: 0 };
+  }
+
+  // Adzuna limit is 50 per page
+  // Fetch 2 pages = 100 jobs max (reduced to avoid rate limits)
+  const pagesToFetch = 2;
+  const pageSize = 50;
+
+  const allJobs: Job[] = [];
+  let totalAvailable = 0;
+
+  try {
+    // Fetch pages sequentially with delay to avoid rate limits
+    for (let i = 1; i <= pagesToFetch; i++) {
+      if (i > 1) {
+        await delay(300); // 300ms delay between requests
+      }
+
+      const result = await fetchAdzunaPage({
+        appId,
+        appKey,
+        keywords: params.keywords,
+        location: params.location,
+        page: i,
+        pageSize,
+      });
+
+      allJobs.push(...result.jobs);
+      totalAvailable = Math.max(totalAvailable, result.total);
     }
 
-    const data: AdzunaResponse = await response.json();
-
-    // Transform Adzuna jobs to our Job format
-    return (data.results || []).map(transformAdzunaJob);
+    return {
+      jobs: allJobs,
+      total: totalAvailable,
+    };
   } catch (error) {
     console.error('Error fetching from Adzuna:', error);
-    return [];
+    return { jobs: [], total: 0 };
   }
 }
 

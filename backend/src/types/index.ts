@@ -66,6 +66,11 @@ export interface PoleEmploiJob {
 
 export interface PoleEmploiSearchResponse {
   resultats: PoleEmploiJob[];
+  filtresPossibles?: Array<{
+    agregation?: Array<{
+      nbResultats?: number;
+    }>;
+  }>;
 }
 
 // Filter types

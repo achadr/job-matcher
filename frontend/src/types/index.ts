@@ -30,13 +30,8 @@ export interface UserProfile {
 // API response types
 export interface JobMatchResponse {
   jobs: MatchedJob[];
-  totalJobs: number;
   profile: UserProfile;
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalPages: number;
-  };
+  cachedAt?: number;
 }
 
 // Filter types

@@ -47,13 +47,14 @@ async function getAccessToken(): Promise<string> {
   return accessToken!;
 }
 
-// Search for jobs on Pôle Emploi
-export async function searchJobs(params: {
+// Fetch a single page of jobs from France Travail
+async function fetchJobsPage(params: {
   keywords?: string;
-  location?: string;
-  range?: string;
-}): Promise<Job[]> {
+  start: number;
+  end: number;
+}): Promise<{ jobs: Job[]; total: number }> {
   const token = await getAccessToken();
+  const range = `${params.start}-${params.end}`;
 
   // Build query parameters
   const queryParams = new URLSearchParams({
@@ -61,8 +62,8 @@ export async function searchJobs(params: {
     region: '11',
     // Get developer/IT jobs (ROME code M18 is for IT)
     grandDomaine: 'M',
-    // Number of results
-    range: params.range || '0-149',
+    // Number of results based on pagination
+    range,
     // Only jobs published in last 14 days (accepts: 1, 3, 7, 14, or 31)
     publieeDepuis: '14',
   });
@@ -89,8 +90,53 @@ export async function searchJobs(params: {
 
   const data: PoleEmploiSearchResponse = await response.json();
 
-  // Transform Pôle Emploi jobs to our Job format
-  return (data.resultats || []).map(transformJob);
+  return {
+    jobs: (data.resultats || []).map(transformJob),
+    total: data.filtresPossibles?.[0]?.agregation?.[0]?.nbResultats || (data.resultats || []).length,
+  };
+}
+
+// Search for jobs on Pôle Emploi - fetches multiple pages
+export async function searchJobs(params: {
+  keywords?: string;
+  location?: string;
+  range?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ jobs: Job[]; total: number }> {
+  // France Travail API limit is 150 per request (range 0-149)
+  // Fetch 3 pages of 150 = 450 jobs max
+  const pagesToFetch = 3;
+  const pageSize = 150;
+
+  const allJobs: Job[] = [];
+  let totalAvailable = 0;
+
+  // Fetch pages in parallel
+  const pagePromises = [];
+  for (let i = 0; i < pagesToFetch; i++) {
+    const start = i * pageSize;
+    const end = start + pageSize - 1;
+    pagePromises.push(
+      fetchJobsPage({
+        keywords: params.keywords,
+        start,
+        end,
+      })
+    );
+  }
+
+  const results = await Promise.all(pagePromises);
+
+  for (const result of results) {
+    allJobs.push(...result.jobs);
+    totalAvailable = Math.max(totalAvailable, result.total);
+  }
+
+  return {
+    jobs: allJobs,
+    total: totalAvailable,
+  };
 }
 
 // Transform Pôle Emploi job format to our Job format

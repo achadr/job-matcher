@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchJobMatches } from './services/api';
 import { SkillChips } from './components/SkillChips';
 import { Filters } from './components/Filters';
@@ -7,7 +7,7 @@ import type { MatchedJob, UserProfile, JobFilters } from './types';
 import './App.css';
 
 function App() {
-  const [jobs, setJobs] = useState<MatchedJob[]>([]);
+  const [allJobs, setAllJobs] = useState<MatchedJob[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,19 +20,16 @@ function App() {
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [totalJobs, setTotalJobs] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
+  // Fetch all jobs once
   const loadJobs = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetchJobMatches({ filters, page, pageSize });
-      setJobs(response.jobs);
+      const response = await fetchJobMatches();
+      setAllJobs(response.jobs);
       setProfile(response.profile);
-      setTotalJobs(response.totalJobs);
-      setTotalPages(response.pagination.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load jobs');
     } finally {
@@ -42,7 +39,59 @@ function App() {
 
   useEffect(() => {
     loadJobs();
-  }, [filters, page, pageSize]);
+  }, []);
+
+  // Apply filters and sorting on frontend
+  const filteredJobs = useMemo(() => {
+    let result = [...allJobs];
+
+    // Filter by minimum match score
+    if (filters.minMatchScore > 0) {
+      result = result.filter(job => job.matchScore >= filters.minMatchScore);
+    }
+
+    // Filter by location
+    if (filters.location) {
+      const locationLower = filters.location.toLowerCase();
+      result = result.filter(job =>
+        job.location.toLowerCase().includes(locationLower)
+      );
+    }
+
+    // Filter by contract type
+    if (filters.contractType) {
+      result = result.filter(job =>
+        job.contractType?.toLowerCase() === filters.contractType.toLowerCase()
+      );
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (filters.sortBy) {
+        case 'matchScore':
+          comparison = a.matchScore - b.matchScore;
+          break;
+        case 'date':
+          comparison = new Date(a.datePosted).getTime() - new Date(b.datePosted).getTime();
+          break;
+        case 'location':
+          comparison = a.location.localeCompare(b.location);
+          break;
+      }
+      return filters.sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    return result;
+  }, [allJobs, filters]);
+
+  // Paginate filtered results
+  const totalJobs = filteredJobs.length;
+  const totalPages = Math.ceil(totalJobs / pageSize);
+  const paginatedJobs = useMemo(() => {
+    const startIndex = (page - 1) * pageSize;
+    return filteredJobs.slice(startIndex, startIndex + pageSize);
+  }, [filteredJobs, page, pageSize]);
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilters: JobFilters) => {
@@ -50,8 +99,8 @@ function App() {
     setPage(1);
   };
 
-  // Get all matched skills across all jobs for highlighting
-  const allMatchedSkills = [...new Set(jobs.flatMap((job) => job.matchedSkills))];
+  // Get all matched skills across displayed jobs for highlighting
+  const allMatchedSkills = [...new Set(paginatedJobs.flatMap((job) => job.matchedSkills))];
 
   return (
     <div className="app">
@@ -69,12 +118,12 @@ function App() {
         </aside>
 
         <section className="content">
-          <JobList jobs={jobs} loading={loading} error={error} />
+          <JobList jobs={paginatedJobs} loading={loading} error={error} />
 
           {!loading && !error && totalPages > 0 && (
             <div className="pagination">
               <div className="pagination-info">
-                Showing {jobs.length} of {totalJobs} jobs (Page {page} of {totalPages})
+                Showing {paginatedJobs.length} of {totalJobs} jobs (Page {page} of {totalPages})
               </div>
 
               <div className="pagination-controls">
