@@ -18,15 +18,21 @@ function App() {
     sortBy: 'matchScore',
     sortOrder: 'desc',
   });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const loadJobs = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetchJobMatches(filters);
+      const response = await fetchJobMatches({ filters, page, pageSize });
       setJobs(response.jobs);
       setProfile(response.profile);
+      setTotalJobs(response.totalJobs);
+      setTotalPages(response.pagination.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load jobs');
     } finally {
@@ -36,7 +42,13 @@ function App() {
 
   useEffect(() => {
     loadJobs();
-  }, [filters]);
+  }, [filters, page, pageSize]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilters: JobFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
 
   // Get all matched skills across all jobs for highlighting
   const allMatchedSkills = [...new Set(jobs.flatMap((job) => job.matchedSkills))];
@@ -53,11 +65,66 @@ function App() {
           {profile && (
             <SkillChips profile={profile} highlightedSkills={allMatchedSkills} />
           )}
-          <Filters filters={filters} onFilterChange={setFilters} />
+          <Filters filters={filters} onFilterChange={handleFilterChange} />
         </aside>
 
         <section className="content">
           <JobList jobs={jobs} loading={loading} error={error} />
+
+          {!loading && !error && totalPages > 0 && (
+            <div className="pagination">
+              <div className="pagination-info">
+                Showing {jobs.length} of {totalJobs} jobs (Page {page} of {totalPages})
+              </div>
+
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  className="pagination-btn"
+                >
+                  First
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="pagination-btn"
+                >
+                  Previous
+                </button>
+                <span className="pagination-page">Page {page}</span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="pagination-btn"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  className="pagination-btn"
+                >
+                  Last
+                </button>
+              </div>
+
+              <div className="page-size-selector">
+                <label>Per page: </label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </div>

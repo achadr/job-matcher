@@ -21,6 +21,10 @@ router.get('/matches', async (req: Request, res: Response) => {
       sortOrder: req.query.sortOrder as JobFilters['sortOrder'],
     };
 
+    // Parse pagination parameters
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 25));
+
     let jobs: Job[] = [];
 
     // Check if we should use mock data (for development without API credentials)
@@ -51,10 +55,21 @@ router.get('/matches', async (req: Request, res: Response) => {
     // Match jobs against user profile
     const matchedJobs = matchJobs(jobs, userProfile, filters);
 
+    // Apply pagination
+    const totalJobs = matchedJobs.length;
+    const totalPages = Math.ceil(totalJobs / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const paginatedJobs = matchedJobs.slice(startIndex, startIndex + pageSize);
+
     const response: JobMatchResponse = {
-      jobs: matchedJobs,
-      totalJobs: matchedJobs.length,
+      jobs: paginatedJobs,
+      totalJobs,
       profile: userProfile,
+      pagination: {
+        page,
+        pageSize,
+        totalPages,
+      },
     };
 
     res.json(response);

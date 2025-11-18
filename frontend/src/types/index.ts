@@ -32,6 +32,11 @@ export interface JobMatchResponse {
   jobs: MatchedJob[];
   totalJobs: number;
   profile: UserProfile;
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }
 
 // Filter types
