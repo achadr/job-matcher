@@ -1,64 +1,89 @@
-import { UserProfile } from '../types';
+import type { UserProfile } from '../types';
 
 // Hardcoded profile for POC
 // This will be replaced with CV parsing in future versions
 export const userProfile: UserProfile = {
-  name: 'Developer',
+  name: 'Achraf Bougattaya',
   location: 'Nanterre, Île-de-France',
   skills: [
-    // Primary skills
-    'React',
-    'TypeScript',
+    // Programming Languages
+    'Python',
     'JavaScript',
+    'TypeScript',
+    'JS',
+    'TS',
+
+    // Frontend Frameworks & Libraries
+    'React',
+    'ReactJS',
+    'DeckGL',
+    'HTML',
+    'HTML5',
+    'CSS',
+    'CSS3',
     'Node.js',
-    'Express',
+    'NodeJS',
 
     // Maps & Visualization
-    'MapboxGL',
     'Mapbox',
-    'DeckGL',
-    'D3.js',
-    'Charts',
-    'Data Visualization',
+    'MapboxGL',
+    'TurfJS',
+    'Ant Design',
+    'KonvaJS',
+    'Cypress',
 
-    // Frontend
-    'HTML',
-    'CSS',
-    'SCSS',
-    'Sass',
-    'Tailwind',
-    'Redux',
-    'Next.js',
-    'Vite',
-    'Webpack',
-
-    // Backend & Database
-    'REST API',
+    // Backend & APIs
+    'Express',
     'GraphQL',
-    'PostgreSQL',
-    'MongoDB',
+    'Apollo',
+    'REST',
+    'API',
+    'FastAPI',
+
+    // Databases
     'SQL',
+    'MongoDB',
+    'ArangoDB',
+    'PostgreSQL',
+    'Postgres',
 
-    // Tools & Practices
-    'Git',
-    'GitHub',
+    // DevOps & Cloud
     'Docker',
+    'Kubernetes',
+    'GCP',
+    'Google Cloud',
     'CI/CD',
-    'Agile',
-    'Scrum',
-    'Jest',
-    'Testing',
+    'GitLab',
+    'GitHub',
+    'Git',
 
-    // General
+    // Monitoring & Tools
+    'Kibana',
+    'Prometheus',
+    'Nginx',
+    'ElasticSearch',
+    'Figma',
+    'Zeplin',
+
+    // French terms (common in job descriptions)
+    'Développeur',
+    'Développement',
+    'Web',
+    'Front',
+    'Back',
+    'Fullstack',
     'Full-Stack',
     'Frontend',
     'Front-end',
-    'Web Development',
+    'Backend',
+    'Back-end',
+    'Freelance',
   ],
   experience: [
     'Front-End Developer',
     'Full-Stack Developer',
     'Web Developer',
+    'Freelance',
   ],
   preferredContractTypes: ['CDI', 'CDD'],
 };
