@@ -62,10 +62,12 @@ export async function searchJobs(params: {
     // Get developer/IT jobs (ROME code M18 is for IT)
     grandDomaine: 'M',
     // Number of results
-    range: params.range || '0-49',
+    range: params.range || '0-149',
+    // Only jobs published in last 14 days (accepts: 1, 3, 7, 14, or 31)
+    publieeDepuis: '14',
   });
 
-  // Add optional keyword search
+  // Add optional keyword filter
   if (params.keywords) {
     queryParams.set('motsCles', params.keywords);
   }

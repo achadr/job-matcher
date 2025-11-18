@@ -44,6 +44,10 @@ export async function searchAdzunaJobs(params: {
     results_per_page: '50',
     what: params.keywords || 'developer',
     where: params.location || 'Île-de-France',
+    // Search in title for better relevance
+    what_or: 'développeur react javascript frontend backend fullstack node typescript',
+    // Only jobs from last 14 days
+    max_days_old: '14',
   });
 
   try {

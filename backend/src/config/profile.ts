@@ -10,74 +10,46 @@ export const userProfile: UserProfile = {
     'Python',
     'JavaScript',
     'TypeScript',
-    'JS',
-    'TS',
 
-    // Frontend Frameworks & Libraries
+    // Frontend
     'React',
-    'ReactJS',
-    'DeckGL',
     'HTML',
-    'HTML5',
     'CSS',
-    'CSS3',
+    'Next.js',
+
+    // Backend & Runtime
     'Node.js',
-    'NodeJS',
+    'Express',
+    'FastAPI',
+
+    // APIs
+    'GraphQL',
+    'REST',
 
     // Maps & Visualization
     'Mapbox',
-    'MapboxGL',
-    'TurfJS',
-    'Ant Design',
-    'KonvaJS',
-    'Cypress',
-
-    // Backend & APIs
-    'Express',
-    'GraphQL',
-    'Apollo',
-    'REST',
-    'API',
-    'FastAPI',
+    'DeckGL',
+    'D3',
 
     // Databases
     'SQL',
-    'MongoDB',
-    'ArangoDB',
     'PostgreSQL',
-    'Postgres',
+    'MongoDB',
+    'Elasticsearch',
 
     // DevOps & Cloud
     'Docker',
     'Kubernetes',
     'GCP',
-    'Google Cloud',
-    'CI/CD',
-    'GitLab',
-    'GitHub',
     'Git',
+    'CI/CD',
 
-    // Monitoring & Tools
-    'Kibana',
-    'Prometheus',
-    'Nginx',
-    'ElasticSearch',
-    'Figma',
-    'Zeplin',
+    // Testing
+    'Cypress',
+    'Jest',
 
-    // French terms (common in job descriptions)
-    'Développeur',
-    'Développement',
-    'Web',
-    'Front',
-    'Back',
-    'Fullstack',
-    'Full-Stack',
-    'Frontend',
-    'Front-end',
-    'Backend',
-    'Back-end',
-    'Freelance',
+    // Methodologies
+    'Agile',
   ],
   experience: [
     'Front-End Developer',
