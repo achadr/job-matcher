@@ -26,7 +26,7 @@ async function getAccessToken(): Promise<string> {
     scope: 'api_offresdemploiv2 o2dsoffre',
   });
 
-  const response = await fetch('https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire', {
+  const response = await fetch('https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=/partenaire', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -71,7 +71,7 @@ export async function searchJobs(params: {
   }
 
   const response = await fetch(
-    `https://api.pole-emploi.io/partenaire/offresdemploi/v2/offres/search?${queryParams.toString()}`,
+    `https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search?${queryParams.toString()}`,
     {
       headers: {
         'Authorization': `Bearer ${token}`,
